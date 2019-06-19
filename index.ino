@@ -1,10 +1,17 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <ArduinoJson.h>
 
 const char* ssid = "MG";
 const char* password = "Genteluci2!";
 
 const char* cloudUrl = "http://ec2-35-172-193-18.compute-1.amazonaws.com/events";
+int segundos = 0;
+
+const size_t CAPACITY = JSON_OBJECT_SIZE(5);
+String payload;
+
+int tensao = 220;
 
 void setup() {
   Serial.begin(9600);
@@ -21,20 +28,39 @@ void setup() {
 
 void loop() {
   if ((WiFi.status() == WL_CONNECTED)) {
-    digitalWrite(2, HIGH);
+    if (segundos == 8) {
+      digitalWrite(2, HIGH);
 
-    HTTPClient http;
+      HTTPClient http;
 
-    http.begin(cloudUrl);
-    http.addHeader("Content-Type", "application/json");
+      http.begin(cloudUrl);
+      http.addHeader("Content-Type", "application/json");
 
-    String payload = "{\"data\":\"2019-06-17T01:24:38.287Z\",\"corrente\":8,\"tensao\":110,\"potencia\":880,\"tempoArcoAberto\":15}";
-    int responseStatusCode = http.POST(payload);
+      StaticJsonDocument<CAPACITY> jsonDoc;
+      JsonObject jsonPayload = jsonDoc.to<JsonObject>();
 
-    http.end();
+      int corrente = 1;
 
-    Serial.println("Fim da requisição ao servidor.");
-    digitalWrite(2, LOW);
-    delay(15000);
+      jsonPayload["data"] = "2019-06-18T01:24:38.287Z";
+      jsonPayload["corrente"] = corrente;
+      jsonPayload["tensao"] = tensao;
+      jsonPayload["potencia"] = corrente * tensao;
+      jsonPayload["tempoArcoAberto"] = segundos;
+
+      serializeJson(jsonDoc, payload);
+
+      int responseStatusCode = http.POST(payload);
+
+      Serial.println(responseStatusCode);
+      http.end();
+      payload = "";
+
+      Serial.println("Fim da requisição ao servidor.");
+      digitalWrite(2, LOW);
+      segundos = 0;
+    }
+
+    segundos++;
+    delay(1000);
   }
 }
