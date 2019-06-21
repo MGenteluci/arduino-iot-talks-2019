@@ -2,10 +2,10 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 
-const char* ssid = "MG";
-const char* password = "Genteluci2!";
+const char* ssid = "{wifi-ssid}";
+const char* password = "{wifi-password}";
 
-const char* cloudUrl = "http://ec2-35-172-193-18.compute-1.amazonaws.com/events";
+const char* cloudUrl = "{cloud-url}";
 int segundos = 0;
 
 const size_t CAPACITY = JSON_OBJECT_SIZE(5);
